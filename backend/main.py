@@ -15,9 +15,9 @@ def start_application():
     return app
 
 #docker
-# app = start_application()
+app = start_application()
 
 #local
-if __name__ == "__main__":
-    app = start_application()
-    uvicorn.run(app,host=configs.APP_HOST,port=int(configs.APP_PORT)) 
+# if __name__ == "__main__":
+#     app = start_application()
+#     uvicorn.run(app,host=configs.APP_HOST,port=int(configs.APP_PORT)) 
