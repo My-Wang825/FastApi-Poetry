@@ -43,5 +43,5 @@ RUN poetry install
 FROM python-base as production
 COPY --from=builder-base $PYSETUP_PATH $PYSETUP_PATH
 COPY ./backend /backend/
-#CMD ["python", "./backend/main.py"]
-CMD ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "80"]
+CMD ["python", "./backend/main.py"]
+# CMD ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "80"]
