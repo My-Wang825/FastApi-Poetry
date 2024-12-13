@@ -35,7 +35,7 @@ WORKDIR $PYSETUP_PATH
 COPY poetry.lock pyproject.toml ./
 
 # install runtime deps - uses $POETRY_VIRTUALENVS_IN_PROJECT internally
-RUN poetry install --no-root
+RUN poetry install
 
 ###############################################
 # Production Image
@@ -46,7 +46,5 @@ COPY . /app
 
 WORKDIR /app
 
-# Expose the port that the app runs on
-EXPOSE 8000
 
-CMD ["poetry", "run", "uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "80"]
