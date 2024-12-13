@@ -18,9 +18,9 @@ ENV PYTHONUNBUFFERED=1 \
 ENV PATH="$POETRY_HOME/bin:$VENV_PATH/bin:$PATH"
 
 # 安装系统依赖
-RUN apt-get update && apt-get install --no-install-recommends -y \
-    curl \
-    build-essential
+# RUN apt-get update && apt-get install --no-install-recommends -y \
+#     curl \
+#     build-essential
 
 # 安装 poetry
 RUN curl -sSL https://install.python-poetry.org | python3 -
