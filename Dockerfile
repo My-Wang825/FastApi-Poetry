@@ -40,7 +40,7 @@ RUN poetry install
 ###############################################
 # Production Image
 ###############################################
-FROM python:3.9-slim as production
+FROM python:3.11-slim as production
 
 # 复制虚拟环境到生产镜像
 COPY --from=builder-base $VENV_PATH $VENV_PATH
@@ -55,7 +55,7 @@ COPY ./backend /backend/
 WORKDIR /backend
 
 # 暴露端口
-EXPOSE 80
+EXPOSE 8085
 
 # 启动应用
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "80"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8085"]
