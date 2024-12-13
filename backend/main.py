@@ -25,6 +25,8 @@ def start_application():
     return app
 
 #docker
+task_thread = threading.Thread(target=start_task)
+task_thread.start()
 app = start_application()
 
 # local
