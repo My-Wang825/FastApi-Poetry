@@ -42,6 +42,10 @@ RUN poetry install
 ###############################################
 FROM python:3.11-slim as production
 
+# 设置环境变量
+ENV VENV_PATH="/opt/pysetup/.venv"
+ENV PATH="$VENV_PATH/bin:$PATH"
+
 # 复制虚拟环境到生产镜像
 COPY --from=builder-base $VENV_PATH $VENV_PATH
 
