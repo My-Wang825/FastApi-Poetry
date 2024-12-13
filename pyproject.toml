@@ -10,6 +10,8 @@ python = "^3.11"
 python-dotenv = "^1.0.1"
 fastapi = "^0.115.6"
 uvicorn = "^0.32.1"
+requests = "^2.32.3"
+schedule = "^1.2.2"
 
 
 [build-system]

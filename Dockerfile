@@ -27,8 +27,8 @@ RUN apt-get update \
     curl \
     build-essential
 
-# install poetry - respects $POETRY_VERSION & $POETRY_HOME
-RUN curl -sSL https://install.python-poetry.org | python3 -
+# 使用官方推荐的 Poetry 安装方式
+RUN curl -sSL https://install.python-poetry.org | python -
 
 # copy project requirement files here to ensure they will be cached.
 WORKDIR $PYSETUP_PATH
@@ -40,8 +40,22 @@ RUN poetry install
 ###############################################
 # Production Image
 ###############################################
-FROM python-base as production
-COPY --from=builder-base $PYSETUP_PATH $PYSETUP_PATH
+FROM python:3.9-slim as production
+
+# 复制虚拟环境到生产镜像
+COPY --from=builder-base $VENV_PATH $VENV_PATH
+
+# 设置环境变量
+ENV PATH="$VENV_PATH/bin:$PATH"
+
+# 复制应用代码
 COPY ./backend /backend/
-CMD ["python", "./backend/main.py"]
-# CMD ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "80"]
+
+# 设置工作目录
+WORKDIR /backend
+
+# 暴露端口
+EXPOSE 80
+
+# 启动应用
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "80"]

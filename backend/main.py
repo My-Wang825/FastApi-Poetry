@@ -5,7 +5,10 @@ import uvicorn
 import os
 import importlib
 import threading
+import task.task_test
 
+def start_task():
+    task.task_test.main()
 
 def include_router(app):
     # 动态导入 api 目录下的所有路由模块
@@ -22,9 +25,13 @@ def start_application():
     return app
 
 #docker
-# app = start_application()
+app = start_application()
 
 # local
-if __name__ == "__main__":
-    app = start_application()
-    uvicorn.run(app,host=configs.APP_HOST,port=int(configs.APP_PORT))
+# if __name__ == "__main__":
+    # task_thread = threading.Thread(target=start_task)
+    # task_thread.start()
+    # print('task_thread started')
+    # app = start_application()
+    # uvicorn.run(app,host=configs.APP_HOST,port=int(configs.APP_PORT))
+    # print('app started')
