@@ -53,7 +53,7 @@ COPY --from=builder-base $VENV_PATH $VENV_PATH
 ENV PATH="$VENV_PATH/bin:$PATH"
 
 # 复制应用代码
-COPY ./backend /backend/
+COPY ./app /backend/
 
 # 设置工作目录
 WORKDIR /backend
@@ -62,4 +62,4 @@ WORKDIR /backend
 EXPOSE 8085
 
 # 启动应用
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8085"]
+CMD ["python", "main.py"]

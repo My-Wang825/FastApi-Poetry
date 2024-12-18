@@ -1,11 +1,12 @@
 import requests
 import schedule
 import time
+import datetime
 # ...existing code...
 
 def job():
-    response = requests.get('http://localhost:8085/')
-    print(response.json())
+    print("I'm working...", datetime.datetime.now())
+
 
 def main():
     schedule.every(5).seconds.do(job)

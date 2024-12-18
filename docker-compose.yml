@@ -1,0 +1,9 @@
+services:
+  app:
+    env_file:
+      - ./backend/.env
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8085:8085"
