@@ -3,7 +3,7 @@ from pathlib import Path
 import os
 
 
-dir_path = (Path(__file__)/".."/"..").resolve()
+dir_path = (Path(__file__)/"..").resolve()
 env_path = os.path.join(dir_path, '.env')
 
 load_dotenv(dotenv_path=env_path)
