@@ -3,6 +3,9 @@ from enum import Enum
 from pydantic import BaseModel,Field
 from typing import Annotated,Literal
 
+router = APIRouter()
+
+
 class ModelName(str, Enum):
     alexnet = "alexnet"
     resnet = "resnet"
@@ -33,7 +36,6 @@ class User(BaseModel):
     full_name: str | None = None
 
 
-router = APIRouter()
 
 @router.get("/")
 async def root():
