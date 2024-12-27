@@ -5,4 +5,4 @@ from apscheduler.schedulers.background import BackgroundScheduler
 scheduler = BackgroundScheduler()
 
 # 定时任务
-scheduler.add_job(nifi_alarm_to_dingding, 'interval', minutes=10)
+# scheduler.add_job(nifi_alarm_to_dingding, 'interval', minutes=10)

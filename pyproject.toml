@@ -13,6 +13,14 @@ requests = "^2.32.3"
 schedule = "^1.2.2"
 apscheduler = "^3.11.0"
 fastapi = "^0.115.6"
+openai = "^1.58.1"
+qwen-agent = "^0.0.15"
+sqlmodel = "^0.0.22"
+pandas = "^2.2.3"
+kaleido = "0.2.1"
+vanna = "^0.7.5"
+chromadb = "^0.5.23"
+pymysql = "^1.1.1"
 
 
 [build-system]

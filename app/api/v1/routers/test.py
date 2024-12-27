@@ -16,6 +16,16 @@ class Item(BaseModel):
     description: str | None = None
     price: float
     tax: float | None = None
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "name": "Foo",
+                "description": "A very nice Item",
+                "price": 35.4,
+                "tax": 3.2,
+            }
+        }
+    }
 
 class FilterParams(BaseModel):
     model_config = {"extra": "forbid"}

@@ -10,9 +10,7 @@ warnings.filterwarnings("ignore")
 nifi_url = configs.NIFI_URL
 auth_url = f'{nifi_url}/access/token'
 
-# 认证信息
-username = 'admin'
-password = 'WeiQiao@pa4word'
+
 
 # 获取访问令牌
 def get_token():
