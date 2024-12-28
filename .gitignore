@@ -45,3 +45,5 @@ Dockerfile copy
 test.rest
 
 .env
+
+.git
