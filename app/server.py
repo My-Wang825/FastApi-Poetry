@@ -82,6 +82,6 @@ init_app(app)
 
 if __name__ == "__main__":
     # prod
-    uvicorn.run("server:app", host=configs.APP_HOST, port=int(configs.APP_PORT),reload=True)
+    uvicorn.run("server:app", host=configs.APP_HOST, port=int(configs.APP_PORT),reload=False)
     # dev
     # uvicorn.run(app, host=configs.APP_HOST, port=int(configs.APP_PORT),reload=True)

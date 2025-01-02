@@ -14,6 +14,11 @@ from pydantic import BaseModel
 from io import StringIO
 import plotly.io as pio
 from core.config import configs
+from enum import Enum
+from typing import Optional, Dict, Any
+
+
+
 
 router = APIRouter()
 
@@ -48,7 +53,6 @@ vn = MyVanna(
 vn.connect_to_mysql(host=configs.DORIS_HOST, dbname=configs.DORIS_DATABASE, user=configs.DORIS_USER, password=configs.DORIS_PASSWORD, port=configs.DORIS_PORT)
 
 
-
 #TODO: 将四个阶段的类封装成一个类，然后将四个接口合并成一个接口去调用
 class SQLQuery(BaseModel):
     question: str
@@ -64,9 +68,6 @@ class PlotlyNeed(BaseModel):
 class SummaryNeed(BaseModel):
     question: str
     df_json: str
-
-class AskDatabase(BaseModel):
-    question: str
 
 @router.get("/")
 def read_root():
@@ -127,10 +128,72 @@ async def generate_summary(request: SummaryNeed):
     summary = vn.generate_summary(question,df)
     return {"summary":summary}
     
+class DatabaseQuery(BaseModel):
+    question: str | None = None
+    query: str | None = None
+    df_json: str | None = None
 
+    class Config:
+        schema_extra = {
+            "example": {
+                "question": "显示销售数据",
+                "query": "SELECT * FROM sales",
+                "df_json": "{...}"
+            }
+        }
+
+class QueryStep(str, Enum):
+    GENERATE_SQL = "generate_sql"
+    RUN_SQL = "run_sql"
+    GENERATE_PLOT = "generate_plot"
+    GENERATE_SUMMARY = "generate_summary"
+
+@router.post("/query_database/")
+async def query_database(
+    request: DatabaseQuery,
+    step: QueryStep
+):
+    try:
+        result: Dict[str, Any] = {}
+        
+        if step == QueryStep.GENERATE_SQL:
+            sql_query = vn.generate_sql(request.question)
+            result["sql_query"] = sql_query
+            
+        elif step == QueryStep.RUN_SQL:
+            sql_query = json.loads(request.query)["sql_query"]
+            sql_result = vn.run_sql(sql_query)
+            
+            
+            result["markdown_table"] = sql_result.to_markdown()
+            result["df_json"] = sql_result.to_json(orient="records")
+            
+        elif step == QueryStep.GENERATE_PLOT:
+            sql_query = json.loads(request.query)["sql_query"]
+            df = pd.read_json(StringIO(request.df_json), orient='records')
+            
+            plotly_code = vn.generate_plotly_code(request.question, sql_query, df)
+            figure = vn.get_plotly_figure(plotly_code, df, dark_mode=False)
+            figure_json = pio.to_json(figure)
+            result["figure_json"] = f"```plotly_json{figure_json}```"
+            
+        elif step == QueryStep.GENERATE_SUMMARY:
+            df = pd.read_json(StringIO(request.df_json), orient='records')
+            summary = vn.generate_summary(request.question, df)
+            result["summary"] = summary
+            
+        return result
+        
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+class AskDatabase(BaseModel):
+    question: str
+    
 #将上面的三个函数合并成一个函数，ask_database
-@router.post("/ask_database/")
-async def ask_database(request: AskDatabase):
+@router.post("/ask_database_v1/")
+async def ask_database_v1(request: AskDatabase):
     try:
         sql_question = request.question
         sql_query = vn.generate_sql(sql_question)

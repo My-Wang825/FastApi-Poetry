@@ -29,7 +29,6 @@ RUN apt-get update \
 
 # 使用官方推荐的 Poetry 安装方式
 RUN curl -sSL https://install.python-poetry.org | python -
-
 # copy project requirement files here to ensure they will be cached.
 WORKDIR $PYSETUP_PATH
 COPY poetry.lock pyproject.toml ./
