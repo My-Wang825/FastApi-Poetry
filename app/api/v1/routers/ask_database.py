@@ -17,11 +17,7 @@ from core.config import configs
 from enum import Enum
 from typing import Optional, Dict, Any
 
-
-
-
 router = APIRouter()
-
 
 
 class MyVanna(ChromaDB_VectorStore, OpenAI_Chat):
@@ -44,90 +40,20 @@ vn = MyVanna(
         "model": "qwen25:72b",
         "temperature": 0,
         "language": "chinese",
-        "path": "./chromadb_data",
+        "path": r"F:\MyFile\PythonProject\fastapi_demo\chromadb_data",
         "embedding_function": sentence_transformer_ef,
     }
 )
 
 #TODO: 之后修改成统一db接口去连数据库，执行sql
-vn.connect_to_mysql(host=configs.DORIS_HOST, dbname=configs.DORIS_DATABASE, user=configs.DORIS_USER, password=configs.DORIS_PASSWORD, port=configs.DORIS_PORT)
+vn.connect_to_mysql(host=configs.DORIS_HOST, dbname=configs.DORIS_DATABASE, user=configs.DORIS_USER, password=configs.DORIS_PASSWORD, port=int(configs.DORIS_PORT))
 
 
-#TODO: 将四个阶段的类封装成一个类，然后将四个接口合并成一个接口去调用
-class SQLQuery(BaseModel):
-    question: str
-
-class SQLResponse(BaseModel):
-    query: str
-
-class PlotlyNeed(BaseModel):
-    question : str
-    query: str
-    df_json: str
-
-class SummaryNeed(BaseModel):
-    question: str
-    df_json: str
 
 @router.get("/")
 def read_root():
     return {"Hello": "This is the Vanna API!"}
-
-@router.post("/generate_sql/")
-def generate_sql(request: SQLQuery):
-    sql_query = vn.generate_sql(request.question)
-    # 打印生成的 SQL 查询以进行调试
-    return {"sql_query": sql_query}
-
-@router.post("/run_sql/")
-def run_sql(request: SQLResponse):
-    try:
-        sql_query_str = request.query
-        sql_query = json.loads(sql_query_str)
-        sql_query = sql_query['sql_query']
-        sql_result = vn.run_sql(sql_query)
-        # Convert scientific notation to normal numbers in the '订单数量' column
-        if '订单数量' in sql_result.columns:
-            sql_result['订单数量'] = sql_result['订单数量'].apply(lambda x: '{:.0f}'.format(x))
-        print(sql_result)
-        print(sql_result.info())
-        df_json = sql_result.to_json(orient="records")
-        df_markdwon = sql_result.to_markdown()
-        return {"markdown_table": df_markdwon,"df_json":df_json}
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
-
-@router.post("/generate_plotly_figure/")
-def generate_plotly_code(request: PlotlyNeed):
-    try:
-        sql_question = request.question
-        sql_query = json.loads(request.query)
-        print(sql_query)
-        query = sql_query['sql_query']
-        df_str = request.df_json
-        print(df_str)
-        df = pd.read_json(StringIO(df_str),orient='records')
-        print(df)
-        print(df.info())
-        plotly_code = vn.generate_plotly_code(sql_question, query, df)
-        print('generate code done')
-        figure = vn.get_plotly_figure(plotly_code,df,dark_mode=False)
-        print('generate figure done')
-        figure_json = pio.to_json(figure)
-        figure_json = f"```plotly_json{figure_json}```"
-        return {"figure_json": figure_json}
-    except Exception as e:
-        print(e)
-        raise HTTPException(status_code=400, detail=str(e))
-    
-@router.post("/generate_summary/")
-async def generate_summary(request: SummaryNeed):
-    question = request.question
-    df_str = request.df_json
-    df = pd.read_json(StringIO(df_str),orient='records')
-    summary = vn.generate_summary(question,df)
-    return {"summary":summary}
-    
+ 
 class DatabaseQuery(BaseModel):
     question: str | None = None
     query: str | None = None
@@ -154,6 +80,7 @@ async def query_database(
     step: QueryStep
 ):
     try:
+        print(request)
         result: Dict[str, Any] = {}
         
         if step == QueryStep.GENERATE_SQL:
@@ -161,7 +88,7 @@ async def query_database(
             result["sql_query"] = sql_query
             
         elif step == QueryStep.RUN_SQL:
-            sql_query = json.loads(request.query)["sql_query"]
+            sql_query = request.query
             sql_result = vn.run_sql(sql_query)
             
             
@@ -169,7 +96,7 @@ async def query_database(
             result["df_json"] = sql_result.to_json(orient="records")
             
         elif step == QueryStep.GENERATE_PLOT:
-            sql_query = json.loads(request.query)["sql_query"]
+            sql_query = request.query
             df = pd.read_json(StringIO(request.df_json), orient='records')
             
             plotly_code = vn.generate_plotly_code(request.question, sql_query, df)
@@ -186,35 +113,3 @@ async def query_database(
         
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
-
-
-class AskDatabase(BaseModel):
-    question: str
-    
-#将上面的三个函数合并成一个函数，ask_database
-@router.post("/ask_database_v1/")
-async def ask_database_v1(request: AskDatabase):
-    try:
-        sql_question = request.question
-        sql_query = vn.generate_sql(sql_question)
-        sql_result = vn.run_sql(sql_query)
-        # Convert scientific notation to normal numbers in the '订单数量' column
-        if '订单数量' in sql_result.columns:
-            sql_result['订单数量'] = sql_result['订单数量'].apply(lambda x: '{:.0f}'.format(x))
-        print(sql_result)
-        print(sql_result.info())
-        df_markdwon = sql_result.to_markdown()
-        plotly_code = vn.generate_plotly_code(sql_question, sql_query, sql_result)
-        print('generate code done')
-        figure = vn.get_plotly_figure(plotly_code,sql_result,dark_mode=False)
-        print('generate figure done')
-        summary = vn.generate_summary(sql_question,sql_result)
-        figure_json = pio.to_json(figure)
-        figure_json = f"```plotly_json{figure_json}```"
-        print(figure_json)
-        return {"markdown_table": df_markdwon, "figure_json": figure_json, "summary": summary, "sql_query": sql_query}
-
-    except Exception as e:
-        print(e)
-        raise HTTPException(status_code=400, detail=str(e))
-    
