@@ -46,7 +46,11 @@ vn = MyVanna(
 )
 
 #TODO: 之后修改成统一db接口去连数据库，执行sql
-vn.connect_to_mysql(host=configs.DORIS_HOST, dbname=configs.DORIS_DATABASE, user=configs.DORIS_USER, password=configs.DORIS_PASSWORD, port=int(configs.DORIS_PORT))
+vn.connect_to_mysql(host=configs.DORIS_HOST, 
+                    dbname=configs.DORIS_DATABASE, 
+                    user=configs.DORIS_USER, 
+                    password=configs.DORIS_PASSWORD, 
+                    port=int(configs.DORIS_PORT))
 
 
 
@@ -80,7 +84,6 @@ async def query_database(
     step: QueryStep
 ):
     try:
-        print(request)
         result: Dict[str, Any] = {}
         
         if step == QueryStep.GENERATE_SQL:
@@ -113,3 +116,4 @@ async def query_database(
         
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+
